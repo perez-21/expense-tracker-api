@@ -15,16 +15,16 @@ const verifyToken = async (req, res, next) => {
             return res.status(401).json('Invalid token');
         }
 
-        req.user= {id: decoded.id, username: decoded.username};
+        req.user = { id: decoded.id, username: decoded.username };
 
         next();
-        
+
     }
     catch (err) {
-        res.status(500).json({error: "Could not verify identity"});
+        res.status(500).json({ error: "Could not verify identity" });
         console.error(err);
     }
-    
+
 }
 
 module.exports = verifyToken;
