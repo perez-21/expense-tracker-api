@@ -64,7 +64,10 @@
 
 - Login
 - Register
-- Profile/me
+
+### User
+
+- Profile
 
 ### My expenses
 
@@ -73,7 +76,7 @@
 - Update my expense
 - Get my expenses(filter by category, date range, amount range)
 - Get my expense by id
-- Get lateset expenses
+- Get latest expenses
 - Add budget
 - Update budget
 
@@ -84,6 +87,3 @@
 - Get all users(filter by date range)
 - Get users by Id
 - Delete user
-- Get all expenses(filter options)
-- Get expense by id
--
