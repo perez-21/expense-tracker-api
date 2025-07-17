@@ -6,7 +6,7 @@ const getBudgetById = async (userId) => {
         if (!budget) {
             return { error: "Not authorised", errorCode: 403 };
         }
-        return { budget };
+        return { budget: structureBudget(budget) };
 
     }
     catch (err) {
@@ -21,8 +21,8 @@ const updateBudgetById = async (userId, yearly, monthly) => {
         if (!budget) {
             return { error: "Not authorised", errorCode: 403 };
         }
-        budget = await budgetModel.findByIdAndUpdate(budget._id, { yearly: yearly || null, monthly: monthly || null, });
-        return { budget };
+        budget = await budgetModel.findByIdAndUpdate(budget._id, { yearly: yearly || budget.yearly, monthly: monthly || budget.monthly, }, { new: true });
+        return { budget: structureBudget(budget) };
 
     }
     catch (err) {
@@ -30,5 +30,16 @@ const updateBudgetById = async (userId, yearly, monthly) => {
         return { error: 'Server error', errorCode: 500 }
     }
 }
+
+const structureBudget = (budget) => {
+    const { _id, user, monthly, yearly } = budget;
+    return {
+        id: _id,
+        userId: user,
+        monthly,
+        yearly,
+    }
+}
+
 
 module.exports = { getBudgetById, updateBudgetById }

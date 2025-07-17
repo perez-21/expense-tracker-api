@@ -2,9 +2,9 @@ const expenseModel = require('./../models/Expense');
 
 const createExpense = async (userId, category, description, amount, date) => {
     try {
-        const expense = await expenseModel.create({ user: userId, category, description: description || '', amount, date });
 
-        return { expense };
+        const expense = await expenseModel.create({ user: userId, category, description: description || '', amount, date });
+        return { expense: structureExpense(expense) };
 
     }
     catch (err) {
@@ -16,8 +16,8 @@ const createExpense = async (userId, category, description, amount, date) => {
 
 const deleteExpenseById = async (userId, expenseId) => {
     try {
-        const expense = await expenseModel.deleteOne({ user: userId, _id: expenseId });
-        return { expense };
+        await expenseModel.deleteOne({ user: userId, _id: expenseId });
+        return {};
 
     }
     catch (err) {
@@ -29,7 +29,11 @@ const deleteExpenseById = async (userId, expenseId) => {
 const getExpenses = async (userId) => {
     try {
         const expenses = await expenseModel.find({ user: userId });
-        return { expenses };
+        if (expenses.length === 0) {
+            return { error: "No expenses found", errorCode: 404 };
+        }
+
+        return { expenses: expenses.map((expense) => structureExpense(expense)) };
     }
     catch (err) {
         console.error(err);
@@ -40,7 +44,7 @@ const getExpenses = async (userId) => {
 const getLatestExpenses = async (userId) => {
     try {
         const expenses = await expenseModel.find({ user: userId }).sort('-date').limit(10);
-        return { expenses };
+        return { expense: expenses.map((expense) => structureExpense(expense)) };
     }
 
     catch (err) {
@@ -55,7 +59,7 @@ const getExpenseById = async (userId, expenseId) => {
         if (!expense) {
             return { error: "Not authorised", errorCode: 403 };
         }
-        return { expense };
+        return { expense: structureExpense(expense) };
 
     }
     catch (err) {
@@ -70,13 +74,27 @@ const updateExpenseById = async (userId, expenseId, category, description, amoun
         if (!expense) {
             return { error: "Not authorised", errorCode: 403 };
         }
-        expense = await expenseModel.findByIdAndUpdate(expenseId, { category: category || null, description: description || null, amount: amount || null, date: date || null });
-        return { expense };
+        expense = await expenseModel.findByIdAndUpdate(expenseId, { category: category || expense.category, description: description || expense.description, amount: amount || expense.amount, date: date || expense.date }, { new: true });
+        return { expense: structureExpense(expense) };
 
     }
     catch (err) {
         console.error(err);
         return { error: 'Server error', errorCode: 500 }
+    }
+}
+
+const structureExpense = (expense) => {
+    const { _id, user, category, description, amount, date, createdAt, updatedAt } = expense;
+    return {
+        id: _id,
+        userId: user,
+        category,
+        description,
+        amount,
+        date,
+        createdAt,
+        updatedAt,
     }
 }
 

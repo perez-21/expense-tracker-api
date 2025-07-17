@@ -111,7 +111,7 @@ router.delete('/:id', async (req, res) => {
         return res.status(result.errorCode).json({ message: 'Failed to delete expense', error: result.error });
     }
 
-    return res.status(200).json({ message: 'Expense deleted successfully', expense: result.expense });
+    return res.status(204);
 
 });
 
