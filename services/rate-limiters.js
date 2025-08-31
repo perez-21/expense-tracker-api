@@ -1,4 +1,4 @@
-
+const { RateLimiterMongo } = require('rate-limiter-flexible');
 
 class LoginRateLimiter {
 
@@ -11,10 +11,10 @@ class LoginRateLimiter {
   #consecutiveFailsByUsernameAndIP;
 
   constructor(mongooseInstance, mongoConn) {
-    if (LoginRateLimiter.#instance) {
-      return LoginRateLimiter.#instance;
-    }
 
+    if (LoginRateLimiter.#instance) {
+      throw new Error("Use LoginRateLimiter.getInstance() instead of new");
+    }
     // initialization
 
     this.#slowBruteByIP = new RateLimiterMongo({
@@ -37,6 +37,13 @@ class LoginRateLimiter {
     LoginRateLimiter.#instance = this;
   }
 
+  static getInstance(mongoInstance, mongoConn) {
+    if (LoginRateLimiter.#instance) {
+      return LoginRateLimiter.#instance;
+    }
+
+    return new LoginRateLimiter(mongoInstance, mongoConn);
+  }
 
   get slowBruteByIP() {
     return this.#slowBruteByIP;

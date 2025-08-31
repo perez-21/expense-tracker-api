@@ -4,18 +4,20 @@ const authService = require("./../services/auth");
 const authMid = require("./../middleware/auth");
 const userModel = require("./../models/User");
 const loginRateLimit = require("./../middleware/login-rate-limit");
-const { LoginRateLimiterService } = require("./../services/rate-limiters");
 
-const loginRateLimiterService = new LoginRateLimiterService(); // don't need to pass mongo client cause it's already setup in index.js
-const slowBruteByIP = loginRateLimiterService.slowBruteByIP;
-const consecutiveFailsByUsernameAndIP = loginRateLimiterService.consecutiveFailsByUsernameAndIP;
-const getUsernameIPkey = loginRateLimiterService.getUsernameIPkey;
+
 
 
 router.post("/login", loginRateLimit.limit, async (req, res) => {
   try {
     const { username, password } = req.body;
     const result = await authService.login(username, password);
+
+    // rate-limiting check
+    const loginRateLimiterService = req.app.locals.loginRateLimiterService;
+    const slowBruteByIP = loginRateLimiterService.slowBruteByIP;
+    const consecutiveFailsByUsernameAndIP = loginRateLimiterService.consecutiveFailsByUsernameAndIP;
+    const getUsernameIPkey = loginRateLimiterService.getUsernameIPkey;
 
     const ipAddr = req.ip;
     const usernameIPkey = getUsernameIPkey(req.body.username, ipAddr);
