@@ -40,7 +40,7 @@ const startServer = async () => {
   const loginRateLimiterService = LoginRateLimiter.getInstance(mongoInstance, mongoConn);
   app.locals.loginRateLimiterService = loginRateLimiterService;
 
-  //app.use("/api/auth", authRoutes);
+  app.use("/api/auth", authRoutes);
   app.use("/api/budgets", verifyUserToken, budgetRoutes);
   app.use("/api/expenses", verifyUserToken, expenseRoutes);
   app.use("/api/users", verifyUserToken, userRoutes);
