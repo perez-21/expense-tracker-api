@@ -61,7 +61,7 @@ class LoginRateLimiter {
     return this.#maxWrongAttemptsByIPperDay
   }
 
-  static getUsernameIPkey(username, ip) {
+  getUsernameIPkey(username, ip) {
     return `${username}_${ip}`;
   }
 
