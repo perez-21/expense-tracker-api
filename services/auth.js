@@ -7,7 +7,7 @@ const saltRounds = 10;
 const login = async (username, password) => {
   try {
     // Check if user exists
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).select('+password');
 
     if (!user) {
       return { error: "Invalid Credentials", errorCode: 401 };
