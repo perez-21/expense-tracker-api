@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const budgetService = require("./../services/budget");
+const { updateBudgetValidationSchema } = require("./../validators/budgets");
+const { checkSchema } = require("express-validator");
+const { validationErrorHandler } = require("./../middleware/validation");
 
-router.get("", async (req, res) => {
+
+router.get("/", async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
     return res.status(401).json({ message: "Not authorized" });
@@ -21,7 +25,7 @@ router.get("", async (req, res) => {
     .json({ message: "Budget fetched successfully", budget: result.budget });
 });
 
-router.patch("", async (req, res) => {
+router.patch("/", checkSchema(updateBudgetValidationSchema, ['body']), validationErrorHandler, async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
     return res.status(401).json({ message: "Not authorized" });

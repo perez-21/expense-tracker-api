@@ -4,11 +4,15 @@ const authService = require("./../services/auth");
 const authMid = require("./../middleware/auth");
 const userModel = require("./../models/User");
 const loginRateLimit = require("./../middleware/login-rate-limit");
+const { loginValidationSchema, registerValidationSchema } = require("./../validators/auth");
+const { checkSchema } = require('express-validator');
+const { validationErrorHandler } = require("./../middleware/validation");
 
 
 
 
-router.post("/login", loginRateLimit.limit, async (req, res) => {
+
+router.post("/login", loginRateLimit.limit, checkSchema(loginValidationSchema, ['body']), validationErrorHandler, async (req, res) => {
   try {
     const { username, password } = req.body;
     const result = await authService.login(username, password);
@@ -37,13 +41,13 @@ router.post("/login", loginRateLimit.limit, async (req, res) => {
 
           await Promise.all(promises);
 
-          res.status(400).end('email or password is wrong');
+          return res.status(400).send({message: 'email or password is wrong'});
         } catch (rlRejected) {
           if (rlRejected instanceof Error) {
             throw rlRejected;
           } else {
             res.set('Retry-After', String(Math.round(rlRejected.msBeforeNext / 1000)) || 1);
-            res.status(429).send('Too Many Requests');
+            res.status(429).send({message: 'Too Many Requests'});
           }
         }
       }
@@ -64,7 +68,7 @@ router.post("/login", loginRateLimit.limit, async (req, res) => {
   }
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", checkSchema(registerValidationSchema, ['body']), validationErrorHandler, async (req, res) => {
   try {
     const { username, password } = req.body;
     const result = await authService.register(username, password);

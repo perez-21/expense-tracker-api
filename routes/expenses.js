@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const expenseService = require("./../services/expense");
+const { createExpenseValidationSchema, updateExpenseValidationSchema } = require("./../validators/expenses");
+const { checkSchema } = require("express-validator");
+const { validationErrorHandler } = require("./../middleware/validation");
 
-router.post("/", async (req, res) => {
+
+router.post("/", checkSchema(createExpenseValidationSchema, ['body']), validationErrorHandler, async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
     return res.status(401).json({ message: "Not authorized" });
@@ -95,7 +99,7 @@ router.get("/:id", async (req, res) => {
     .json({ message: "Expense fetched successfully", expense: result.expense });
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", checkSchema(updateExpenseValidationSchema, ['body']), validationErrorHandler, async (req, res) => {
   const userId = req.user.id;
   if (!userId) {
     return res.status(401).json({ message: "Not authorized" });
