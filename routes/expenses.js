@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const expenseService = require("./../services/expense");
-const { createExpenseValidationSchema, updateExpenseValidationSchema } = require("./../validators/expenses");
+const { createExpenseValidationSchema, updateExpenseValidationSchema, getExpensesQueryValidationSchema } = require("./../validators/expenses");
 const { checkSchema } = require("express-validator");
 const { validationErrorHandler } = require("./../middleware/validation");
 
@@ -32,16 +32,15 @@ router.post("/", checkSchema(createExpenseValidationSchema, ['body']), validatio
     .json({ message: "Expense created successfully", expense: result.expense });
 });
 
-router.get("/", async (req, res) => {
+router.get("/", checkSchema(getExpensesQueryValidationSchema, ['query']), validationErrorHandler, async (req, res) => {
+  const { limit, offset, category, sort, order } = req.query;
+  
   const userId = req.user.id;
   if (!userId) {
     return res.status(401).json({ message: "Not authorized" });
   }
 
-  const { filter } = req.query;
-  // TODO: implement filtering later
-
-  const result = await expenseService.getExpenses(userId);
+  const result = await expenseService.getExpenses(userId, limit, offset, category, sort, order);
 
   if (result.error) {
     return res

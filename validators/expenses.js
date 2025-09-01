@@ -1,3 +1,5 @@
+const expenseConstants = require('../constants/expense');
+
 const createExpenseValidationSchema = {
   category: {
     errorMessage: 'Invalid Category',
@@ -6,7 +8,7 @@ const createExpenseValidationSchema = {
     trim: true,
     escape: true,
     isIn: {
-      options: [["Groceries", "Leisure", "Utilities", "Clothing", "Health", "Electronics", "Internet", "Rent", "Vehicle", "Family", "Savings", "Transportation", "Home", "Other"]],
+      options: [expenseConstants.CATEGORIES],
     }
   },
   description: {
@@ -53,7 +55,7 @@ const updateExpenseValidationSchema = {
     optional: true,
     escape: true,
     isIn: {
-      options: [["Groceries", "Leisure", "Utilities", "Clothing", "Health", "Electronics", "Internet", "Rent", "Vehicle", "Family", "Savings", "Transportation", "Home", "Other"]]
+      options: [expenseConstants.CATEGORIES]
     }
   },
   description: {
@@ -89,4 +91,62 @@ const updateExpenseValidationSchema = {
   }
 }
 
-module.exports = {createExpenseValidationSchema, updateExpenseValidationSchema};
+const getExpensesQueryValidationSchema = {
+  limit: {
+    notEmpty: {
+      errorMessage: 'Limit is required'
+    },
+    isInt: {
+      options: {
+        min: 5,
+        max: 30,
+      },
+      errorMessage: 'Limit must be integer from 5 - 30',
+
+    },
+    toInt: true,
+  },
+  offset: {
+    optional: true,
+    isInt: {
+      options: {
+        min: 5,
+      },
+      errorMessage: 'Offset must be integer greater than 5',
+
+    },
+    toInt: true,
+  },
+  category: {
+    errorMessage: 'Invalid Category',
+    isString: {options: true},
+    trim: true,
+    optional: true,
+    escape: true,
+    isIn: {
+      options: [expenseConstants.CATEGORIES]
+    }
+  },
+  sort: {
+    errorMessage: `Sort can only be ${expenseConstants.SORT_OPTIONS.join(' or ')}`,
+    isString: {options: true},
+    trim: true,
+    optional: true,
+    escape: true,
+    isIn: {
+      options: [expenseConstants.SORT_OPTIONS]
+    }
+  },
+  order: {
+    errorMessage: `Order can only be ${expenseConstants.SORT_ORDER.join(' or ')}`,
+    isString: {options: true},
+    trim: true,
+    optional: true,
+    escape: true,
+    isIn: {
+      options: [expenseConstants.SORT_ORDER]
+    }
+  }
+}
+
+module.exports = {createExpenseValidationSchema, updateExpenseValidationSchema, getExpensesQueryValidationSchema};

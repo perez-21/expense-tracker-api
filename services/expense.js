@@ -26,11 +26,25 @@ const deleteExpenseById = async (userId, expenseId) => {
   }
 };
 
-const getExpenses = async (userId) => {
+const getExpenses = async (userId, limit, offset, category, sort, order) => {
+
+  const filter = {
+    user: userId,
+  }
+  if (category) {
+    filter.category = category;
+  }
+
+  const sortQuery = `${order === "asc" ? "" : "-"}${sort ? sort : "date"}`;
+
+  
   try {
-    const expenses = await expenseModel.find({ user: userId });
+    const expenses = await expenseModel.find(filter)
+      .sort(sortQuery)
+      .skip(offset ? offset : 0)
+      .limit(limit);
     if (expenses.length === 0) {
-      return { expenses: [] };
+      return { error: "Expenses not found", errorCode: 404 };
     }
 
     return { expenses: expenses.map((expense) => structureExpense(expense)) };
