@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require("crypto");
 const expenseService = require("./../services/expense");
 const { createExpenseValidationSchema, updateExpenseValidationSchema, getExpensesQueryValidationSchema } = require("./../validators/expenses");
 const { checkSchema } = require("express-validator");
@@ -34,6 +35,7 @@ router.post("/", checkSchema(createExpenseValidationSchema, ['body']), validatio
 
 router.get("/", checkSchema(getExpensesQueryValidationSchema, ['query']), validationErrorHandler, async (req, res) => {
   const { limit, offset, category, sort, order } = req.query;
+
   
   const userId = req.user.id;
   if (!userId) {
@@ -46,6 +48,20 @@ router.get("/", checkSchema(getExpensesQueryValidationSchema, ['query']), valida
     return res
       .status(result.errorCode)
       .json({ message: "Failed to get expenses", error: result.error });
+  }
+
+  const expenseIds = result.expenses.map((expense) => expense.id).join(",");
+  
+  const etag = crypto.createHash("sha256")
+    .update(JSON.stringify(expenseIds))
+    .digest("base64");
+
+  res.set("Cache-Control", "private, no-cache");
+  res.set("Vary", "Accept-Encoding, Authorization");
+  res.set("ETag", `"${etag}"`);
+
+  if (req.headers["if-none-match"] === `"${etag}"`) {
+    return res.status(304).end();
   }
 
   return res.status(200).json({
