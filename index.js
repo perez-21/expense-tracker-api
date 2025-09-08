@@ -6,6 +6,7 @@ const { LoginRateLimiter } = require("./services/rate-limiters");
 const { initializeMongoose } = require("./configs/database");
 const mongoose = require("mongoose");
 const verifyUserToken = require("./middleware/auth");
+const gloabalErrorHandler = require("./middleware/global-error-handler");
 const authRoutes = require("./routes/auth");
 const budgetRoutes = require("./routes/budgets");
 const userRoutes = require("./routes/users");
@@ -23,7 +24,6 @@ const startServer = async () => {
 
   // middleware
 
-  // TODO: Restrict soon
   const corsOptions = {
     origin: "*",
   };
@@ -34,7 +34,6 @@ const startServer = async () => {
   app.use(express.urlencoded({ extended: true }));
 
   app.disable("x-powered-by");
-  // TODO: global error handling
 
   // initializeLoginRateLimiter
   const loginRateLimiterService = LoginRateLimiter.getInstance(mongoInstance, mongoConn);
@@ -44,6 +43,9 @@ const startServer = async () => {
   app.use("/api/budgets", verifyUserToken, budgetRoutes);
   app.use("/api/expenses", verifyUserToken, expenseRoutes);
   app.use("/api/users", verifyUserToken, userRoutes);
+
+  // global error handling
+  app.use(gloabalErrorHandler);
 
   app.listen(port, () => {
     console.log(`Expenses server listening on port ${port}`);
